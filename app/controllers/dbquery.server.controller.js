@@ -1,5 +1,5 @@
 var express = require('express')
-var dbquery = require('../modules/dbquery')
+var dbquery = require('../models/dbquery')
 
 module.exports.showStats=function(req, res){
 
@@ -10,7 +10,7 @@ module.exports.showStats=function(req, res){
     }
     else{
       console.log(result)
-      res.render('stats.ejs', {result:result})
+      res.render('page.pug', {result:result})
     }
   })
 
