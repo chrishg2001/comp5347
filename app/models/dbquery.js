@@ -4,24 +4,36 @@ mongoose.connect('mongodb://localhost/wikiarticles', function () {
   console.log('mongodb connected')
 })
 
-var RevisionSchema = new mongoose.Schema(
-  {
-    title: String,
-    timestamp: String,
-    user: String,
-    anon: String
-  },
-  {
-    versionKey:false
-  }
-)
+var RevisionSchema = new mongoose.Schema()
 
-RevisionSchema.statics.findArticles = function(title, callback){
-
-	return this.find({'title':title}).sort({'timestamp':-1}).limit(1).exec(callback)
+RevisionSchema.statics.mostRevisions = function(req, callback){
+  return this.aggregate([{$group:{_id:"$title",revisions:{$sum:1}}}, {$sort:{revisions:-1}}]).limit(1).exec(callback)
 }
 
-var result = mongoose.model('result', RevisionSchema, 'revisions')
-console.log(result[0])
+RevisionSchema.statics.leastRevisions = function(title, callback){
+  return this.aggregate([{$group:{_id:"$title",revisions:{$sum:1}}}, {$sort:{revisions:1}}]).limit(1).exec(callback)
+}
 
-module.exports = result
+RevisionSchema.statics.mostRegisteredUsers = function(title, callback){
+  return this.aggregate([{$group:{_id:"$title",uniqueCount:{$addToSet:"$user"}}}, {$project:{"CITY":1,uniqueUserCount:{$size:"$uniqueCount"}} }, {$sort:{uniqueUserCount:-1}}]).limit(1).exec(callback)
+}
+
+RevisionSchema.statics.leastRegisteredUsers = function(title, callback){
+  return this.aggregate([{$group:{_id:"$title",uniqueCount:{$addToSet:"$user"}}}, {$project:{"CITY":1,uniqueUserCount:{$size:"$uniqueCount"}} }, {$sort:{uniqueUserCount:1}}]).limit(1).exec(callback)
+}
+
+RevisionSchema.statics.longestHistory = function(title, callback){
+  return this.find({}, {title:1}).sort({'timestamp':1}).limit(1).exec(callback)
+}
+
+RevisionSchema.statics.shortestHistory = function(title, callback){
+  return this.find({}, {title:1}).sort({'timestamp':-1}).limit(1).exec(callback)
+}
+
+RevisionSchema.statics.groupByYear = function(title, callback){
+  return this.aggregate([{$group:{_id:{$substr:["$timestamp", 0, 4]},revisions:{$sum:1}}}, {$sort:{_id:1}}]).exec(callback)
+ }
+
+ var result = mongoose.model('result', RevisionSchema, 'revisions')
+
+ module.exports = result
