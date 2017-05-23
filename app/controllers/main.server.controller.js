@@ -1,5 +1,7 @@
 var express = require('express')
 var dbquery = require('../models/dbquery')
+var Sync = require('sync')
+var dataparser = require('../models/dataparser')
 
 module.exports.dbquery=function(req, res, next){
   dbquery.mostRevisions(req, function(err, result){
@@ -69,11 +71,35 @@ module.exports.renderMain=function(req, res){
 }
 
 module.exports.yearStats=function(req,res){
-  dbquery.groupByYear(req, function(err, result){
-    var data = {}
-    for (var line in result){
-      data[result[line]['_id']] = result[line]['revisions']
-    }
-    res.json(data);
-  })
+  local = {}
+  dbquery.groupByYear(req.app.locals.admin, function(err, result){
+      for(var line in result){
+        local[result[line]["_id"]] = [result[line]["revisions"]]
+      }
+      dbquery.groupByYear(req.app.locals.bot, function(err, result){
+          for(var line in local){
+            local[line][1] = 0
+          }
+
+          for(var line in result){
+            local[result[line]["_id"]][1] = result[line]["revisions"]
+          }
+          dbquery.groupByAnon(null, function(err, result){
+              for(var line in result){
+                local[result[line]["_id"]][2] = result[line]["revisions"]
+              }
+              dbquery.groupByTotalYear(null, function(err, result){
+                  for(var line in result){
+                    local[result[line]["_id"]][3] = result[line]["revisions"] - local[result[line]["_id"]][2] - local[result[line]["_id"]][1] - local[result[line]["_id"]][0]
+                  }
+                  data = []
+                  dataparser.arrayPush(data, local, function(result){
+                    console.log(result)
+                    res.json(result);
+                  })
+                  // res.json(local);
+                })
+            })
+        })
+    })
 }

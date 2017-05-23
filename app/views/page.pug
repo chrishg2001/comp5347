@@ -1,12 +1,18 @@
 html(lang="en")
 head
-	title Visualization
+	title Wikipedia Data
+	link(rel='stylesheet', href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css")
 	script(src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
-	script(src="https://www.gstatic.com/charts/loader.js")
-	script(src="/js/main.js")
 body
 
-	a(href='/pieChart' id='pie') Pie Chart
+	a(href='/pieChart' id='pie')
+		button(type="button" class="btn btn-primary btn-lg") Pie Chart
 	br
-	a(href='/barChart' id='bar') Bar Charts
+	a(href='/barChart' id='bar')
+		button(type="button" class="btn btn-primary btn-lg") Bar Charts
 	div#myChart
+
+	div
+	script(src="https://www.gstatic.com/charts/loader.js")
+	script(src="/js/main.js")
+	script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js")

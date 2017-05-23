@@ -30,9 +30,18 @@ RevisionSchema.statics.shortestHistory = function(title, callback){
   return this.find({}, {title:1}).sort({'timestamp':-1}).limit(1).exec(callback)
 }
 
-RevisionSchema.statics.groupByYear = function(title, callback){
-  return this.aggregate([{$group:{_id:{$substr:["$timestamp", 0, 4]},revisions:{$sum:1}}}, {$sort:{_id:1}}]).exec(callback)
+RevisionSchema.statics.groupByYear = function(array, callback){
+  return this.aggregate([{$match: {user: {$in: array}}}, {$group: {_id: {$substr:["$timestamp", 0, 4]}, revisions:{$sum:1}}}, {$sort:{_id:1}}]).exec(callback)
+  // return this.aggregate([{$project:{year:{$substr:["$timestamp", 0, 4]}, user:1, anon:1}}]).limit(300000).exec(callback)
  }
+
+RevisionSchema.statics.groupByAnon = function(array, callback){
+ return this.aggregate([{$match: {anon: {$exists:true}}}, {$group: {_id: {$substr:["$timestamp", 0, 4]}, revisions:{$sum:1}}}, {$sort:{_id:1}}]).exec(callback) // return this.aggregate([{$project:{year:{$substr:["$timestamp", 0, 4]}, user:1, anon:1}}]).limit(300000).exec(callback)
+}
+
+RevisionSchema.statics.groupByTotalYear = function(array, callback){
+  return this.aggregate([{$group: {_id: {$substr:["$timestamp", 0, 4]}, revisions:{$sum:1}}},{$sort:{_id:1}}]).exec(callback)
+}
 
  var result = mongoose.model('result', RevisionSchema, 'revisions')
 
