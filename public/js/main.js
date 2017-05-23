@@ -19,15 +19,6 @@ function drawPie(){
 
 function drawBar(){
   graphData = new google.visualization.arrayToDataTable(data);
-
-  // graphData.addColumn('string', 'Year');
-  // graphData.addColumn('number', 'Admin');
-  // graphData.addColumn('number', 'Bot');
-  // graphData.addColumn('number', 'Anon');
-  // graphData.addColumn('number', 'User');
-  // $.each(data, function(key, val) {
-  //   graphData.addRow([key, val[0], val[1], val[2], val[3]]);
-  // })
   var chart = new google.charts.Bar($("#myChart")[0]);
   chart.draw(graphData, google.charts.Bar.convertOptions(options));
 }
