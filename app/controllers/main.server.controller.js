@@ -4,70 +4,151 @@ var Sync = require('sync')
 var dataparser = require('../models/dataparser')
 
 module.exports.dbquery=function(req, res, next){
-  dbquery.mostRevisions(req, function(err, result){
-    if(err){
-      console.log('Error retrieving query values')
-    }
-    else{
-      req.app.locals.result[0] = result
-    }
-  })
+  var data = req.query.data
+  if (data === "mostRevisions"){
+      dbquery.mostRevisions(req, function(err, result){
+        if(err){
+          console.log('Error retrieving query values')
+        }
+        else{
+          req.app.locals.result = result[0]
+        }
+        return next();
+      })
+  }
+  else if (data === "leastRevisions"){
+      dbquery.leastRevisions(req, function(err, result){
+        if(err){
+          console.log('Error retrieving query values')
+        }
+        else{
+          req.app.locals.result = result[0]
+        }
+        return next();
+      })
+  }
+  else if (data === "mostRegisteredUsers"){
+      dbquery.mostRegisteredUsers(req, function(err, result){
+        if(err){
+          console.log('Error retrieving query values')
+        }
+        else{
+          req.app.locals.result = result[0]
+        }
+        return next();
+      })
+  }
 
-  dbquery.leastRevisions(req, function(err, result){
-    if(err){
-      console.log('Error retrieving query values')
-    }
-    else{
-      req.app.locals.result[1] = result
-      dbquery.mostRevisions();
-    }
-  })
+  else if (data === "leastRegisteredUsers"){
+      dbquery.leastRegisteredUsers(req, function(err, result){
+        if(err){
+          console.log('Error retrieving query values')
+        }
+        else{
+          req.app.locals.result = result[0]
+        }
+        return next();
+      })
+  }
 
-  dbquery.mostRegisteredUsers(req, function(err, result){
-    if(err){
-      console.log('Error retrieving query values')
-    }
-    else{
-      req.app.locals.result[2] = result
-      dbquery.leastRevisions();
-    }
-  })
+  else if (data === "longestHistory"){
+      dbquery.longestHistory(req, function(err, result){
+        if(err){
+          console.log('Error retrieving query values')
+        }
+        else{
+          req.app.locals.result = result[0]
+        }
+        return next();
+      })
+  }
 
-  dbquery.leastRegisteredUsers(req, function(err, result){
-    if(err){
-      console.log('Error retrieving query values')
-    }
-    else{
-      req.app.locals.result[3] = result
-      dbquery.mostRegisteredUsers();
-    }
-  })
+  else if (data === "shortestHistory"){
+      dbquery.shortestHistory(req, function(err, result){
+        if(err){
+          console.log('Error retrieving query values')
+        }
+        else{
+          req.app.locals.result = result[0]
+        }
+        return next();
+      })
+  }
 
-  dbquery.longestHistory(req, function(err, result){
-    if(err){
-      console.log('Error retrieving query values')
-    }
-    else{
-      req.app.locals.result[4] = result
-      dbquery.leastRegisteredUsers();
-    }
-  })
-
-  dbquery.shortestHistory(req, function(err, result){
-    if(err){
-      console.log('Error retrieving query values')
-    }
-    else{
-      req.app.locals.result[5] = result
-      dbquery.shortestHistory();
-      return next();
-    }
-  })
+  else {
+    return next();
+  }
 }
+
+// module.exports.dbquery=function(req, res, next){
+//   dbquery.mostRevisions(req, function(err, result){
+//     if(err){
+//       console.log('Error retrieving query values')
+//     }
+//     else{
+//       req.app.locals.result["mostRevisions"] = result
+//     }
+//   })
+//
+//   dbquery.leastRevisions(req, function(err, result){
+//     if(err){
+//       console.log('Error retrieving query values')
+//     }
+//     else{
+//       req.app.locals.result["leastRevisions"] = result
+//       dbquery.mostRevisions();
+//     }
+//   })
+//
+//   dbquery.mostRegisteredUsers(req, function(err, result){
+//     if(err){
+//       console.log('Error retrieving query values')
+//     }
+//     else{
+//       req.app.locals.result["mostRegisteredUsers"] = result
+//       dbquery.leastRevisions();
+//     }
+//   })
+//
+//   dbquery.leastRegisteredUsers(req, function(err, result){
+//     if(err){
+//       console.log('Error retrieving query values')
+//     }
+//     else{
+//       req.app.locals.result["leastRegisteredUsers"] = result
+//       dbquery.mostRegisteredUsers();
+//     }
+//   })
+//
+//   dbquery.longestHistory(req, function(err, result){
+//     if(err){
+//       console.log('Error retrieving query values')
+//     }
+//     else{
+//       req.app.locals.result["longestHistory"] = result
+//       dbquery.leastRegisteredUsers();
+//     }
+//   })
+//
+//   dbquery.shortestHistory(req, function(err, result){
+//     if(err){
+//       console.log('Error retrieving query values')
+//     }
+//     else{
+//       req.app.locals.result["shortestHistory"] = result
+//       dbquery.shortestHistory();
+//       return next();
+//     }
+//   })
+// }
 
 module.exports.renderMain=function(req, res){
   console.log(req.app.locals.result)
-  return res.render('page.pug', {result:req.app.locals.result})
+  return res.render('page.ejs')
+}
+
+module.exports.sendJson=function(req, res){
+  res.json(req.app.locals.result);
 }
 
 module.exports.yearStats=function(req,res){

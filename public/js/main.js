@@ -2,12 +2,12 @@ google.charts.load('current', {packages: ['bar']});
 google.charts.load('current', {packages: ['corechart']});
 
 var optionsBar = {'title':"Revisions by Year  ",
-        'width':800,
-        'height':600};
+        'width':600,
+        'height':450};
 
 var options = {'title':"Revisions by Type  ",
-        'width':800,
-        'height':600};
+        'width':600,
+        'height':450};
 
 var data = []
 
@@ -22,7 +22,7 @@ function drawPie(){
   for (var row in data){
     if(row === "0") {continue; }
     var admin = admin + data[row][1];
-    var bot = admin + data[row][2];
+    var bot = bot + data[row][2];
     var anon = anon + data[row][3];
     var user = user + data[row][4];
   }
@@ -47,19 +47,69 @@ function drawBar(){
 
 $(document).ready(function() {
 
-    $.getJSON('/data',null, function(rdata) {
-    	data = rdata
-    }
-    );
+    // if(data.length <= 0){
+    //   setTimeout(function(){
+    //     drawBar()
+    //   }, 3000);
+    // }
+
+    $.when(
+      $.getJSON('/data',null, function(rdata) {
+      	data = rdata
+        drawBar()
+      })
+    ).then(function(){
+      $.get('/getarticledata?data=mostRevisions', function(rdata){
+        var text = "The article with the most revisions is " + rdata["_id"] + " with "+ String(rdata["revisions"]) + " revisions.";
+        $("#mostRevisions").text(text);
+      });
+      $.get('/getarticledata?data=leastRevisions', function(rdata){
+        var text = "The article with the least revisions is " + rdata["_id"] + " with "+ String(rdata["revisions"]) + " revisions.";
+        $("#leastRevisions").text(text);
+      });
+      $.get('/getarticledata?data=mostRegisteredUsers', function(rdata){
+        var text = "The article with the most unique registered users is " + rdata["_id"] + " with "+ String(rdata["uniqueUserCount"]) + " users.";
+        $("#mostRegisteredUsers").text(text);
+      });
+      $.get('/getarticledata?data=leastRegisteredUsers', function(rdata){
+        var text = "The article with the least unique registered users is " + rdata["_id"] + " with "+ String(rdata["uniqueUserCount"]) + " users.";
+        $("#leastRegisteredUsers").text(text);
+      });
+      $.get('/getarticledata?data=longestHistory', function(rdata){
+        var text = "The article with the longest history is " + rdata["title"] + " with the earliest revision on "+ String(rdata["timestamp"]).substring(0,10) + ".";
+        $("#longestHistory").text(text);
+      });
+      $.get('/getarticledata?data=shortestHistory', function(rdata){
+        var text = "The article with the shortest history is " + rdata["title"] + " with the lastest revision on "+ String(rdata["timestamp"]).substring(0,10) + ".";
+        $("#shortestHistory").text(text);
+      });
+    });
 
     $("#pie").click(function(event){
-    	event.preventDefault();
-    	drawPie()
+      event.preventDefault();
+      if(data.length <= 0){
+        setTimeout(function(){
+        	drawPie()
+        }, 1000);
+      } else {
+        drawPie()
+      }
    	})
 
    	$("#bar").click(function(event){
-    	event.preventDefault();
-    	drawBar()
+      event.preventDefault();
+      if(data.length <= 0){
+        setTimeout(function(){
+        	drawBar()
+        }, 1000);
+      } else {
+        drawBar()
+      }
    	})
+
+    // $("#menu-toggle").click(function(e) {
+    //     e.preventDefault();
+    //     $("#wrapper").toggleClass("toggled");
+    // });
 
 });

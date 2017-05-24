@@ -23,11 +23,11 @@ RevisionSchema.statics.leastRegisteredUsers = function(title, callback){
 }
 
 RevisionSchema.statics.longestHistory = function(title, callback){
-  return this.find({}, {title:1}).sort({'timestamp':1}).limit(1).exec(callback)
+  return this.find({}, {title:1, timestamp:1}).sort({'timestamp':1}).limit(1).exec(callback)
 }
 
 RevisionSchema.statics.shortestHistory = function(title, callback){
-  return this.find({}, {title:1}).sort({'timestamp':-1}).limit(1).exec(callback)
+  return this.find({}, {title:1, timestamp:1}).sort({'timestamp':-1}).limit(1).exec(callback)
 }
 
 RevisionSchema.statics.groupByYear = function(array, callback){
