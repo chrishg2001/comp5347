@@ -3,6 +3,17 @@ var dbquery = require('../models/dbquery')
 var Sync = require('sync')
 var dataparser = require('../models/dataparser')
 
+module.exports.getArticles=function(req, res){
+  dbquery.getArticles(req, function(err, result){
+    if(err){
+      console.log('Error retrieving query values')
+    }
+    else{
+        res.json(result);
+    }
+  })
+}
+
 module.exports.dbquery=function(req, res, next){
   var data = req.query.data
   if (data === "mostRevisions"){

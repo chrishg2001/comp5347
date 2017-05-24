@@ -4,4 +4,5 @@ var controller = require('../controllers/main.server.controller.js')
 router.get('/', controller.renderMain)
 router.get('/getarticledata', controller.dbquery, controller.sendJson)
 router.get('/data', controller.yearStats)
+router.get('/articleList', controller.getArticles)
 module.exports = router

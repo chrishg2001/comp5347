@@ -47,12 +47,6 @@ function drawBar(){
 
 $(document).ready(function() {
 
-    // if(data.length <= 0){
-    //   setTimeout(function(){
-    //     drawBar()
-    //   }, 3000);
-    // }
-
     $.when(
       $.getJSON('/data',null, function(rdata) {
       	data = rdata
@@ -85,6 +79,8 @@ $(document).ready(function() {
       });
     });
 
+    $("#page-content-wrapper-articles").hide();
+
     $("#pie").click(function(event){
       event.preventDefault();
       if(data.length <= 0){
@@ -107,9 +103,15 @@ $(document).ready(function() {
       }
    	})
 
-    // $("#menu-toggle").click(function(e) {
-    //     e.preventDefault();
-    //     $("#wrapper").toggleClass("toggled");
-    // });
+    $("#overall").click(function(e) {
+        e.preventDefault();
+        $("#page-content-wrapper-articles").hide();
+        $("#page-content-wrapper-overall").show();
+    });
 
+    $("#article-statistics").click(function(e) {
+        e.preventDefault();
+        $("#page-content-wrapper-overall").hide();
+        $("#page-content-wrapper-articles").show();
+    });
 });

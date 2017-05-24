@@ -43,6 +43,10 @@ RevisionSchema.statics.groupByTotalYear = function(array, callback){
   return this.aggregate([{$group: {_id: {$substr:["$timestamp", 0, 4]}, revisions:{$sum:1}}},{$sort:{_id:1}}]).exec(callback)
 }
 
+RevisionSchema.statics.getArticles = function(array, callback){
+  return this.distinct("title").exec(callback)
+}
+
  var result = mongoose.model('result', RevisionSchema, 'revisions')
 
  module.exports = result
