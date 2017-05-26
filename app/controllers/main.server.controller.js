@@ -3,6 +3,67 @@ var dbquery = require('../models/dbquery')
 var Sync = require('sync')
 var dataparser = require('../models/dataparser')
 
+module.exports.getIndArticleData=function(req,res){
+  var article = req.query.article
+  var data = {}
+  dbquery.getArticleRevisions(article, function(err, result){
+    data['revisions'] = result
+    dbquery.getArticleTopUsers(article, req.app.locals.admin, req.app.locals.bot, function(err, result){
+      var topUsers = []
+      console.log(result)
+      for (var i in result){
+        var user = result[i]["_id"]
+        var revisions = result[i]["revisions"]
+        topUsers.push([user, revisions])
+      }
+      data["topUsers"] = topUsers
+      res.json(data)
+    })
+  })
+}
+
+module.exports.groupByArticleUser=function(req, res){
+  var article = req.query.article
+  var data = {}
+  dbquery.groupArticleByYear(article, req.app.locals.admin, function(err, result){
+    var admin = {}
+    for(var i in result){
+      var year = result[i]["_id"]
+      var revisions = result[i]["revisions"]
+      admin[year] = revisions
+    }
+    data['admin'] = admin
+    dbquery.groupArticleByYear(article, req.app.locals.bot, function(err, result){
+      var bot = {}
+      for(var i in result){
+        var year = result[i]["_id"]
+        var revisions = result[i]["revisions"]
+        bot[year] = revisions
+      }
+      data['bot'] = bot
+      dbquery.groupByArticleAnon(article, function(err, result){
+        var anon = {}
+        for(var i in result){
+          var year = result[i]["_id"]
+          var revisions = result[i]["revisions"]
+          anon[year] = revisions
+        }
+        data['anon'] = anon
+        dbquery.groupByArticleTotal(article, function(err, result){
+          var total = {}
+          for(var i in result){
+            var year = result[i]["_id"]
+            var revisions = result[i]["revisions"]
+            total[year] = revisions
+          }
+          data['total'] = total
+          res.json(data)
+        })
+      })
+    })
+  })
+}
+
 module.exports.getArticles=function(req, res){
   dbquery.getArticles(req, function(err, result){
     if(err){

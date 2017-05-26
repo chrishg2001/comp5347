@@ -8,8 +8,9 @@
     <!-- Bootstrap Core CSS -->
 		<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-    <!-- Custom CSS -->
+        <!-- Custom CSS -->
     <link rel="stylesheet" href="/css/simple-sidebar.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
 
 </head>
 
@@ -68,24 +69,39 @@
         <!-- /#page-content-wrapper -->
 
 				<div id="page-content-wrapper-articles">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-lg-12">
-												<div>
-	                        <h3>Article Statistics</h3>
-												</div>
+          <div class="container-fluid">
+              <div class="row">
+                <div class="col-lg-12">
+										<div>
+                      <h3>Article Statistics</h3>
+                      <!-- <div class="ui-widget"> -->
+                        <!-- <select id="articleSearch" style="width: 75%"> -->
+                        <div id="articleSearch" style="width: 75%"></div>
+                        <!-- </select> -->
                     </div>
+                    <div class="individual-article">
+                      <br>
+                      <h3 id="articleTitle"></h3>
+                      <p id="totalRevisions"></p>
+                      <p id="topRevisions"></p>
+                      <br>
+                      <div id="articleChart">
+                      </div>
+                    </div>
+									</div>
                 </div>
-            </div>
-        </div>
-    </div>
+              </div>
+          </div>
+      </div>
     <!-- /#wrapper -->
 
     <!-- jQuery -->
 		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 		<script type="text/javascript" src="/js/main.js"></script>
 		<script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-
+    <script src = "https://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src = "https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
     <!-- Menu Toggle Script -->
 
 </body>

@@ -43,9 +43,34 @@ RevisionSchema.statics.groupByTotalYear = function(array, callback){
   return this.aggregate([{$group: {_id: {$substr:["$timestamp", 0, 4]}, revisions:{$sum:1}}},{$sort:{_id:1}}]).exec(callback)
 }
 
-RevisionSchema.statics.getArticles = function(array, callback){
+RevisionSchema.statics.getArticles = function(article, callback){
   return this.distinct("title").exec(callback)
 }
+
+RevisionSchema.statics.getArticleRevisions = function(article, callback){
+  return this.find({title:article}).count().exec(callback)
+}
+
+RevisionSchema.statics.getArticleTopUsers = function(article, admin, bot, callback){
+  return this.aggregate([{$match: {title: article, user: {$nin: admin}, user: {$nin:bot}, anon: {$exists:false}}}, {$group: {_id: "$user", revisions:{$sum:1}}}, {$sort:{revisions:-1}}]).limit(5).exec(callback)
+}
+
+RevisionSchema.statics.groupArticleByYear = function(article, array, callback){
+  return this.aggregate([{$match: {title:article, user: {$in: array}}}, {$group: {_id: {$substr:["$timestamp", 0, 4]}, revisions:{$sum:1}}}, {$sort:{_id:1}}]).exec(callback)
+  // return this.aggregate([{$project:{year:{$substr:["$timestamp", 0, 4]}, user:1, anon:1}}]).limit(300000).exec(callback)
+ }
+
+RevisionSchema.statics.groupByArticleAnon = function(article, callback){
+  return this.aggregate([{$match: {title: article, anon: {$exists:true}}}, {$group: {_id: {$substr:["$timestamp", 0, 4]}, revisions:{$sum:1}}}, {$sort:{_id:1}}]).exec(callback) // return this.aggregate([{$project:{year:{$substr:["$timestamp", 0, 4]}, user:1, anon:1}}]).limit(300000).exec(callback)
+}
+
+RevisionSchema.statics.groupByArticleTotal = function(article, callback){
+ return this.aggregate([{$match: {title: article}}, {$group: {_id: {$substr:["$timestamp", 0, 4]}, revisions:{$sum:1}}}, {$sort:{_id:1}}]).exec(callback) // return this.aggregate([{$project:{year:{$substr:["$timestamp", 0, 4]}, user:1, anon:1}}]).limit(300000).exec(callback)
+}
+
+// RevisionSchema.statics.getArticleLatestRevisions = function(article, callback){
+//
+// }
 
  var result = mongoose.model('result', RevisionSchema, 'revisions')
 

@@ -5,4 +5,6 @@ router.get('/', controller.renderMain)
 router.get('/getarticledata', controller.dbquery, controller.sendJson)
 router.get('/data', controller.yearStats)
 router.get('/articleList', controller.getArticles)
+router.get('/getIndArticleData', controller.getIndArticleData)
+router.get('/groupByArticleUser', controller.groupByArticleUser)
 module.exports = router

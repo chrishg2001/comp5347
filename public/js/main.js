@@ -9,7 +9,11 @@ var options = {'title':"Revisions by Type  ",
         'width':600,
         'height':450};
 
-var data = []
+var optionsArticleBar = {'title':"Revisions by Year and User Type ",
+        'width':600,
+        'height':450};
+
+var data = [];
 
 function drawPie(){
   graphData = new google.visualization.DataTable();
@@ -32,9 +36,6 @@ function drawPie(){
   graphData.addRow(["Anon", anon]);
   graphData.addRow(["User", user]);
 
-  // $.each(data, function(key, val) {
-  //   graphData.addRow([key, val]);
-  // })
   var chart = new google.visualization.PieChart($("#myChart")[0]);
   chart.draw(graphData, options);
 }
@@ -43,6 +44,44 @@ function drawBar(){
   graphData = new google.visualization.arrayToDataTable(data);
   var chart = new google.charts.Bar($("#myChart")[0]);
   chart.draw(graphData, google.charts.Bar.convertOptions(optionsBar));
+}
+
+function drawArticleBar(articleData){
+  graphData = new google.visualization.arrayToDataTable(articleData);
+  var chart = new google.charts.Bar($("#articleChart")[0]);
+  chart.draw(graphData, google.charts.Bar.convertOptions(optionsArticleBar));
+}
+
+function loadArticle(e) {
+  $("#articleTitle").empty();
+  $("#totalRevisions").empty();
+  $("#topRevisions").empty();
+  $("#articleChart").empty();
+  $("#articleTitle").append(e.params.data.text);
+  $.get('./getIndArticleData?article=' + e.params.data.text, function(rdata){
+    $("#totalRevisions").append("There are " + rdata["revisions"] + " total revisions.");
+    $("#topRevisions").append("The top 5 active users are: <br>");
+    for(var user in rdata["topUsers"]){
+      $("#topRevisions").append(String(parseInt(user)+1) + ". " + rdata["topUsers"][user][0] + " with " + rdata["topUsers"][user][1] + " total revisions. <br>");
+    }
+  })
+  // $("#topRevisions").append(e.params.data.text);
+  $.get('/groupByArticleUser?article=' + e.params.data.text, function(rdata){
+    var articleUserYear = [["Year", "Admin", "Bot", "Anon", "User"]];
+    for(var year in rdata["total"]){
+      var array = []
+      array.push(year)
+      if(rdata["admin"][year]) array.push(rdata["admin"][year]);
+      else array.push(0);
+      if(rdata["bot"][year]) array.push(rdata["bot"][year]);
+      else array.push(0);
+      if(rdata["anon"][year]) array.push(rdata["anon"][year]);
+      else array.push(0);
+      array.push(parseInt(rdata["total"][year]) - array[1] - array[2] - array[3])
+      articleUserYear.push(array)
+    }
+    drawArticleBar(articleUserYear)
+  })
 }
 
 $(document).ready(function() {
@@ -77,6 +116,13 @@ $(document).ready(function() {
         var text = "The article with the shortest history is " + rdata["title"] + " with the lastest revision on "+ String(rdata["timestamp"]).substring(0,10) + ".";
         $("#shortestHistory").text(text);
       });
+    }).then(function(){
+      $.get('/articleList', function(rdata){
+        $("#articleSearch").select2({
+          data: rdata,
+          placeholder: "Select an article"
+        });
+      })
     });
 
     $("#page-content-wrapper-articles").hide();
@@ -114,4 +160,10 @@ $(document).ready(function() {
         $("#page-content-wrapper-overall").hide();
         $("#page-content-wrapper-articles").show();
     });
+
+    $("#articleSearch").on("select2:select", function(e){
+      loadArticle(e);
+    })
+
+
 });
