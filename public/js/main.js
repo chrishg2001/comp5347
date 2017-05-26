@@ -13,7 +13,15 @@ var optionsArticleBar = {'title':"Revisions by Year and User Type ",
         'width':600,
         'height':450};
 
+var optionsArticlePie = {'title':"Revisions by User Type ",
+        'width':600,
+        'height':450};
+
 var data = [];
+var articleData;
+var topUsers;
+var topUserData;
+var articleName;
 
 function drawPie(){
   graphData = new google.visualization.DataTable();
@@ -46,10 +54,76 @@ function drawBar(){
   chart.draw(graphData, google.charts.Bar.convertOptions(optionsBar));
 }
 
-function drawArticleBar(articleData){
-  graphData = new google.visualization.arrayToDataTable(articleData);
+function drawArticleBar(rdata){
+  var articleUserYear = [["Year", "Admin", "Bot", "Anon", "User"]];
+  for(var year in rdata["users"]){
+    var array = []
+    array.push(year)
+    if(rdata["admin"][year]) array.push(rdata["admin"][year]);
+    else array.push(0);
+    if(rdata["bot"][year]) array.push(rdata["bot"][year]);
+    else array.push(0);
+    if(rdata["anon"][year]) array.push(rdata["anon"][year]);
+    else array.push(0);
+    array.push(rdata["users"][year])
+    articleUserYear.push(array)
+  }
+
+  graphData = new google.visualization.arrayToDataTable(articleUserYear);
   var chart = new google.charts.Bar($("#articleChart")[0]);
   chart.draw(graphData, google.charts.Bar.convertOptions(optionsArticleBar));
+}
+
+function drawArticlePie(articleData){
+  graphData = new google.visualization.DataTable();
+  graphData.addColumn('string', 'Type');
+  graphData.addColumn('number', 'Revisions');
+  var admin = 0
+  var bot = 0
+  var anon = 0
+  var user = 0
+  for (var year in articleData["admin"]){
+    admin = parseInt(admin) + parseInt(articleData["admin"][year])
+  }
+  for (var year in articleData["bot"]){
+    bot = parseInt(bot) + parseInt(articleData["bot"][year])
+  }
+  for (var year in articleData["anon"]){
+    anon = parseInt(anon) + parseInt(articleData["anon"][year])
+  }
+  for (var year in articleData["users"]){
+    user = parseInt(user) + parseInt(articleData["users"][year])
+  }
+
+  graphData.addRow(["Admin", admin]);
+  graphData.addRow(["Bot", bot]);
+  graphData.addRow(["Anon", anon]);
+  graphData.addRow(["User", user]);
+
+  var chart = new google.visualization.PieChart($("#articleChart")[0]);
+  chart.draw(graphData, optionsArticlePie);
+}
+
+function drawArticleUsersBar(topUsers){
+
+}
+
+function totalRevisions(rdata){
+  $("#totalRevisions").append("There are " + rdata["revisions"] + " total revisions.");
+  $("#topRevisions").append("The top 5 active users are: <br>");
+  topUsers = []
+  topUserData = {}
+  for(var user in rdata["topUsers"]){
+    $("#topRevisions").append(String(parseInt(user)+1) + ". " + rdata["topUsers"][user][0] + " with " + rdata["topUsers"][user][1] + " total revisions. <br>");
+    // topUsers.push(rdata["topUsers"][user][0])
+    console.log(rdata["topUsers"][user][0])
+    topUsers.push(rdata["topUsers"][user][0])
+    var request = "/topUserYear?data=" + articleName + "%26%26" + rdata["topUsers"][user][0]
+    console.log(request)
+    $.get(request, function(resdata){
+      topUserData[resdata[0]] = resdata[1]
+    })
+  }
 }
 
 function loadArticle(e) {
@@ -57,30 +131,15 @@ function loadArticle(e) {
   $("#totalRevisions").empty();
   $("#topRevisions").empty();
   $("#articleChart").empty();
+  articleName = e.params.data.text;
   $("#articleTitle").append(e.params.data.text);
   $.get('./getIndArticleData?article=' + e.params.data.text, function(rdata){
-    $("#totalRevisions").append("There are " + rdata["revisions"] + " total revisions.");
-    $("#topRevisions").append("The top 5 active users are: <br>");
-    for(var user in rdata["topUsers"]){
-      $("#topRevisions").append(String(parseInt(user)+1) + ". " + rdata["topUsers"][user][0] + " with " + rdata["topUsers"][user][1] + " total revisions. <br>");
-    }
+    totalRevisions(rdata);
   })
   // $("#topRevisions").append(e.params.data.text);
   $.get('/groupByArticleUser?article=' + e.params.data.text, function(rdata){
-    var articleUserYear = [["Year", "Admin", "Bot", "Anon", "User"]];
-    for(var year in rdata["total"]){
-      var array = []
-      array.push(year)
-      if(rdata["admin"][year]) array.push(rdata["admin"][year]);
-      else array.push(0);
-      if(rdata["bot"][year]) array.push(rdata["bot"][year]);
-      else array.push(0);
-      if(rdata["anon"][year]) array.push(rdata["anon"][year]);
-      else array.push(0);
-      array.push(parseInt(rdata["total"][year]) - array[1] - array[2] - array[3])
-      articleUserYear.push(array)
-    }
-    drawArticleBar(articleUserYear)
+    articleData = rdata
+    drawArticleBar(articleData)
   })
 }
 
@@ -126,6 +185,7 @@ $(document).ready(function() {
     });
 
     $("#page-content-wrapper-articles").hide();
+    $("#articleChartToggle").hide();
 
     $("#pie").click(function(event){
       event.preventDefault();
@@ -161,8 +221,42 @@ $(document).ready(function() {
         $("#page-content-wrapper-articles").show();
     });
 
+    $("#articleBarChart").click(function(e) {
+        e.preventDefault();
+        $("#userSearch").parent().hide();
+        drawArticleBar(articleData);
+    });
+
+    $("#articlePieChart").click(function(e) {
+        e.preventDefault();
+        $("#userSearch").parent().hide();
+        drawArticlePie(articleData);
+    });
+
+    $("#articleTopFive").click(function(e) {
+        e.preventDefault();
+        drawArticleUsersBar(topUsers);
+        console.log(topUsers);
+        console.log(topUserData);
+        $("#userSearch").parent().show();
+        $("#userSearch").select2({
+          data: topUsers,
+          placeholder: "Select users to graph",
+          multiple: "multiple"
+        });
+    });
+
+    // $("#userSearch").on("select2:select", function(e){
+    //   loadArticle(e);
+    //   $("#articleChartToggle").show();
+    // })
+
+
     $("#articleSearch").on("select2:select", function(e){
       loadArticle(e);
+      $("#articleChartToggle").show();
+      $("#userSearch").empty();
+      $("#userSearch").parent().hide();
     })
 
 

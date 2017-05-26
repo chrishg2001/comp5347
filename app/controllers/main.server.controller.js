@@ -10,15 +10,36 @@ module.exports.getIndArticleData=function(req,res){
     data['revisions'] = result
     dbquery.getArticleTopUsers(article, req.app.locals.admin, req.app.locals.bot, function(err, result){
       var topUsers = []
-      console.log(result)
       for (var i in result){
         var user = result[i]["_id"]
         var revisions = result[i]["revisions"]
+        // var revisionUser = {}
+        // dbquery.getArticleUserYear(article, user, function(err, result){
+        //   for(var year in result){
+        //     revisionUser[result[year]["_id"]] = result[year]["revisions"]
+        //   }
+        // })
         topUsers.push([user, revisions])
       }
       data["topUsers"] = topUsers
+
       res.json(data)
     })
+  })
+}
+
+module.exports.topUserYear=function(req, res){
+  var request = req.query.data.split("&&")
+  dbquery.getArticleUserYear(request[0], request[1], function(err, result){
+    var array = []
+    array.push(request[1])
+    var revisionUser = {}
+    for(var year in result){
+      revisionUser[result[year]["_id"]] = result[year]["revisions"]
+    }
+    array.push(revisionUser)
+    console.log(array)
+    res.json(array)
   })
 }
 
@@ -26,6 +47,7 @@ module.exports.groupByArticleUser=function(req, res){
   var article = req.query.article
   var data = {}
   dbquery.groupArticleByYear(article, req.app.locals.admin, function(err, result){
+    console.log(result)
     var admin = {}
     for(var i in result){
       var year = result[i]["_id"]
@@ -49,15 +71,24 @@ module.exports.groupByArticleUser=function(req, res){
           anon[year] = revisions
         }
         data['anon'] = anon
-        dbquery.groupByArticleTotal(article, function(err, result){
-          var total = {}
+        dbquery.groupByArticleUsers(article, req.app.locals.admin, req.app.locals.bot, function(err, result){
+          var users = {}
           for(var i in result){
             var year = result[i]["_id"]
             var revisions = result[i]["revisions"]
-            total[year] = revisions
+            users[year] = revisions
           }
-          data['total'] = total
-          res.json(data)
+          data['users'] = users
+          dbquery.groupByArticleTotal(article, function(err, result){
+            var total = {}
+            for(var i in result){
+              var year = result[i]["_id"]
+              var revisions = result[i]["revisions"]
+              total[year] = revisions
+            }
+            data['total'] = total
+            res.json(data)
+          })
         })
       })
     })

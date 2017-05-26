@@ -7,4 +7,5 @@ router.get('/data', controller.yearStats)
 router.get('/articleList', controller.getArticles)
 router.get('/getIndArticleData', controller.getIndArticleData)
 router.get('/groupByArticleUser', controller.groupByArticleUser)
+router.get('/topUserYear', controller.topUserYear)
 module.exports = router

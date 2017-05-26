@@ -41,6 +41,7 @@ RevisionSchema.statics.groupByAnon = function(array, callback){
 
 RevisionSchema.statics.groupByTotalYear = function(array, callback){
   return this.aggregate([{$group: {_id: {$substr:["$timestamp", 0, 4]}, revisions:{$sum:1}}},{$sort:{_id:1}}]).exec(callback)
+  // return this.aggregate([{$match: {anon: {$exists:false}, user: {$nin: array}, user: {$nin:array1}}}, {$group: {_id: {$substr:["$timestamp", 0, 4]}, revisions:{$sum:1}}},{$sort:{_id:1}}]).exec(callback)
 }
 
 RevisionSchema.statics.getArticles = function(article, callback){
@@ -64,13 +65,19 @@ RevisionSchema.statics.groupByArticleAnon = function(article, callback){
   return this.aggregate([{$match: {title: article, anon: {$exists:true}}}, {$group: {_id: {$substr:["$timestamp", 0, 4]}, revisions:{$sum:1}}}, {$sort:{_id:1}}]).exec(callback) // return this.aggregate([{$project:{year:{$substr:["$timestamp", 0, 4]}, user:1, anon:1}}]).limit(300000).exec(callback)
 }
 
-RevisionSchema.statics.groupByArticleTotal = function(article, callback){
- return this.aggregate([{$match: {title: article}}, {$group: {_id: {$substr:["$timestamp", 0, 4]}, revisions:{$sum:1}}}, {$sort:{_id:1}}]).exec(callback) // return this.aggregate([{$project:{year:{$substr:["$timestamp", 0, 4]}, user:1, anon:1}}]).limit(300000).exec(callback)
+RevisionSchema.statics.groupByArticleUsers = function(article, array1, array2, callback){
+ return this.aggregate([{$match: {title: article, user: {$nin: array1}, user: {$nin: array2}}}, {$group: {_id: {$substr:["$timestamp", 0, 4]}, revisions:{$sum:1}}}, {$sort:{_id:1}}]).exec(callback)
+ // return this.aggregate([{$project:{year:{$substr:["$timestamp", 0, 4]}, user:1, anon:1}}]).limit(300000).exec(callback)
 }
 
-// RevisionSchema.statics.getArticleLatestRevisions = function(article, callback){
-//
-// }
+RevisionSchema.statics.groupByArticleTotal = function(article, callback){
+ return this.aggregate([{$match: {title: article}}, {$group: {_id: {$substr:["$timestamp", 0, 4]}, revisions:{$sum:1}}}, {$sort:{_id:1}}]).exec(callback)
+ // return this.aggregate([{$project:{year:{$substr:["$timestamp", 0, 4]}, user:1, anon:1}}]).limit(300000).exec(callback)
+}
+
+RevisionSchema.statics.getArticleUserYear = function(article, user, callback){
+  return this.aggregate([{$match: {title: article, user: user}}, {$group: {_id: {$substr:["$timestamp", 0, 4]}, revisions:{$sum:1}}}]).exec(callback)
+}
 
  var result = mongoose.model('result', RevisionSchema, 'revisions')
 
