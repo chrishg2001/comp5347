@@ -2,6 +2,7 @@ var express = require('express')
 var dbquery = require('../models/dbquery')
 var Sync = require('sync')
 var dataparser = require('../models/dataparser')
+var mediaWiki = require('../models/mediawiki')
 
 module.exports.getIndArticleData=function(req,res){
   var article = req.query.article
@@ -13,26 +14,40 @@ module.exports.getIndArticleData=function(req,res){
       for (var i in result){
         var user = result[i]["_id"]
         var revisions = result[i]["revisions"]
-        // var revisionUser = {}
-        // dbquery.getArticleUserYear(article, user, function(err, result){
-        //   for(var year in result){
-        //     revisionUser[result[year]["_id"]] = result[year]["revisions"]
-        //   }
-        // })
         topUsers.push([user, revisions])
       }
       data["topUsers"] = topUsers
-
-      res.json(data)
+      dbquery.articleLatestRevision(article, function(err, result){
+        data["latestRevision"] = result[0]["_doc"]["timestamp"]
+        console.log(result[0]["_doc"]["timestamp"])
+        console.log(new Date())
+        console.log(new Date() - Date.parse(result[0]["_doc"]["timestamp"]))
+        if((new Date() - Date.parse(result[0]["_doc"]["timestamp"])) < 86400000){
+          data["update"] = 0
+          res.json(data)
+        }
+        else {
+          // var revisionData = mediaWiki.updateRevisions(article, data["latestRevision"])
+          mediaWiki.updateRevisions(article, data["latestRevision"], function(revisionData){
+            for(var i in revisionData){
+              data[i] = revisionData[i]
+              console.log(data[i])
+            }
+          console.log(revisionData)
+          res.json(data)
+          })
+        }
+      })
     })
   })
 }
 
 module.exports.topUserYear=function(req, res){
-  var request = req.query.data.split("&&")
-  dbquery.getArticleUserYear(request[0], request[1], function(err, result){
+  var articleName = req.params["articleName"]
+  var user = req.params["user"]
+  dbquery.getArticleUserYear(articleName, user, function(err, result){
     var array = []
-    array.push(request[1])
+    array.push(user)
     var revisionUser = {}
     for(var year in result){
       revisionUser[result[year]["_id"]] = result[year]["revisions"]

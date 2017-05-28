@@ -160,11 +160,21 @@ function totalRevisions(rdata){
     // topUsers.push(rdata["topUsers"][user][0])
     console.log(rdata["topUsers"][user][0])
     topUsers.push(rdata["topUsers"][user][0])
-    var request = "/topUserYear?data=" + articleName + "%26%26" + rdata["topUsers"][user][0]
+    // var request = "/topUserYear?data=" + articleName + "%26%26" + rdata["topUsers"][user][0]
+    var request = "/topUserYear/" + articleName + "/" + rdata["topUsers"][user][0]
     console.log(request)
     $.get(request, function(resdata){
       topUserData[resdata[0]] = resdata[1]
     })
+  }
+}
+
+function updateRevisions(rdata){
+  if(rdata["update"] === undefined){
+    $("#updateRevisions").append("Pull requests made. Total number of additional revisions: " + rdata["updatedRevisions"]);
+  }
+  else{
+    $("#updateRevisions").append("No pull requests made.");
   }
 }
 
@@ -173,10 +183,12 @@ function loadArticle(e) {
   $("#totalRevisions").empty();
   $("#topRevisions").empty();
   $("#articleChart").empty();
+  $("#updateRevisions").empty();
   articleName = e.params.data.text;
   $("#articleTitle").append(e.params.data.text);
   $.get('./getIndArticleData?article=' + e.params.data.text, function(rdata){
     totalRevisions(rdata);
+    updateRevisions(rdata);
   })
   // $("#topRevisions").append(e.params.data.text);
   $.get('/groupByArticleUser?article=' + e.params.data.text, function(rdata){

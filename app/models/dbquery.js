@@ -79,6 +79,10 @@ RevisionSchema.statics.getArticleUserYear = function(article, user, callback){
   return this.aggregate([{$match: {title: article, user: user}}, {$group: {_id: {$substr:["$timestamp", 0, 4]}, revisions:{$sum:1}}}]).exec(callback)
 }
 
+RevisionSchema.statics.articleLatestRevision = function(article, callback){
+  return this.find({title:article}, {timestamp:1}).sort({'timestamp':-1}).limit(1).exec(callback)
+}
+
  var result = mongoose.model('result', RevisionSchema, 'revisions')
 
  module.exports = result
