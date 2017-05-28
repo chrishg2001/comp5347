@@ -186,14 +186,19 @@ function loadArticle(e) {
   $("#updateRevisions").empty();
   articleName = e.params.data.text;
   $("#articleTitle").append(e.params.data.text);
-  $.get('./getIndArticleData?article=' + e.params.data.text, function(rdata){
-    totalRevisions(rdata);
-    updateRevisions(rdata);
-  })
+  $.when(
+    $.get('./pullRequest?article=' + e.params.data.text, function(rdata){
+      updateRevisions(rdata);
+    })
+  ).then(function(){
   // $("#topRevisions").append(e.params.data.text);
-  $.get('/groupByArticleUser?article=' + e.params.data.text, function(rdata){
-    articleData = rdata
-    drawArticleBar(articleData)
+    $.get('./getIndArticleData?article=' + e.params.data.text, function(rdata){
+      totalRevisions(rdata);
+    })
+    $.get('/groupByArticleUser?article=' + e.params.data.text, function(rdata){
+      articleData = rdata
+      drawArticleBar(articleData)
+    })
   })
 }
 

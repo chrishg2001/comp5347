@@ -4,6 +4,32 @@ var Sync = require('sync')
 var dataparser = require('../models/dataparser')
 var mediaWiki = require('../models/mediawiki')
 
+module.exports.pullRequest=function(req, res){
+  var article = req.query.article;
+  var data = {}
+  dbquery.articleLatestRevision(article, function(err, result){
+    data["latestRevision"] = result[0]["_doc"]["timestamp"]
+    console.log(result[0]["_doc"]["timestamp"])
+    console.log(new Date())
+    console.log(new Date() - Date.parse(result[0]["_doc"]["timestamp"]))
+    if((new Date() - Date.parse(result[0]["_doc"]["timestamp"])) < 86400000){
+      data["update"] = 0
+      res.json(data)
+    }
+    else {
+      // var revisionData = mediaWiki.updateRevisions(article, data["latestRevision"])
+      mediaWiki.updateRevisions(article, data["latestRevision"], function(revisionData){
+        for(var i in revisionData){
+          data[i] = revisionData[i]
+          console.log(data[i])
+        }
+      console.log(revisionData)
+      res.json(data)
+      })
+    }
+  })
+}
+
 module.exports.getIndArticleData=function(req,res){
   var article = req.query.article
   var data = {}
@@ -17,27 +43,7 @@ module.exports.getIndArticleData=function(req,res){
         topUsers.push([user, revisions])
       }
       data["topUsers"] = topUsers
-      dbquery.articleLatestRevision(article, function(err, result){
-        data["latestRevision"] = result[0]["_doc"]["timestamp"]
-        console.log(result[0]["_doc"]["timestamp"])
-        console.log(new Date())
-        console.log(new Date() - Date.parse(result[0]["_doc"]["timestamp"]))
-        if((new Date() - Date.parse(result[0]["_doc"]["timestamp"])) < 86400000){
-          data["update"] = 0
-          res.json(data)
-        }
-        else {
-          // var revisionData = mediaWiki.updateRevisions(article, data["latestRevision"])
-          mediaWiki.updateRevisions(article, data["latestRevision"], function(revisionData){
-            for(var i in revisionData){
-              data[i] = revisionData[i]
-              console.log(data[i])
-            }
-          console.log(revisionData)
-          res.json(data)
-          })
-        }
-      })
+      res.json(data)
     })
   })
 }
