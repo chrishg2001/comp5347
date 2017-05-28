@@ -17,11 +17,16 @@ var optionsArticlePie = {'title':"Revisions by User Type ",
         'width':600,
         'height':450};
 
+var optionsArticleUsers = {'title':"Revisions by User and Year ",
+        'width':600,
+        'height':450};
+
 var data = [];
 var articleData;
 var topUsers;
 var topUserData;
 var articleName;
+var selectedUsers = [];
 
 function drawPie(){
   graphData = new google.visualization.DataTable();
@@ -105,7 +110,44 @@ function drawArticlePie(articleData){
 }
 
 function drawArticleUsersBar(topUsers){
+  var userData = [["Year"]];
+  for(var user in topUsers){
+    userData[0].push(topUsers[user])
+  }
 
+  dict = {}
+
+  for(var user in topUserData){
+    for(var topUser in topUsers){
+      if(topUsers[topUser] === user){
+        for(var year in topUserData[user]){
+          if(dict[year] === undefined){
+            dict[year] = []
+            for(var i = 0; i < topUsers.length; i++){
+              dict[year].push(0)
+            }
+          }
+          dict[year][topUser] = topUserData[user][year]
+        }
+      }
+    }
+  }
+
+  console.log(dict)
+
+  for(var indexk in Object.keys(dict).sort()){
+    var key = Object.keys(dict)[indexk]
+    var row = [key]
+    for(var index in dict[key]){
+      row.push(dict[key][index])
+    }
+    console.log(row);
+    userData.push(row);
+  }
+
+  graphData = new google.visualization.arrayToDataTable(userData);
+  var chart = new google.charts.Bar($("#articleChart")[0]);
+  chart.draw(graphData, google.charts.Bar.convertOptions(optionsArticleUsers));
 }
 
 function totalRevisions(rdata){
@@ -145,12 +187,12 @@ function loadArticle(e) {
 
 $(document).ready(function() {
 
-    $.when(
+    // $.when(
       $.getJSON('/data',null, function(rdata) {
       	data = rdata
         drawBar()
       })
-    ).then(function(){
+    // ).then(function(){
       $.get('/getarticledata?data=mostRevisions', function(rdata){
         var text = "The article with the most revisions is " + rdata["_id"] + " with "+ String(rdata["revisions"]) + " revisions.";
         $("#mostRevisions").text(text);
@@ -175,17 +217,18 @@ $(document).ready(function() {
         var text = "The article with the shortest history is " + rdata["title"] + " with the lastest revision on "+ String(rdata["timestamp"]).substring(0,10) + ".";
         $("#shortestHistory").text(text);
       });
-    }).then(function(){
+    // }).then(function(){
       $.get('/articleList', function(rdata){
         $("#articleSearch").select2({
           data: rdata,
           placeholder: "Select an article"
         });
       })
-    });
+    // });
 
     $("#page-content-wrapper-articles").hide();
     $("#articleChartToggle").hide();
+    $("#graphTopUsers").hide();
 
     $("#pie").click(function(event){
       event.preventDefault();
@@ -235,16 +278,23 @@ $(document).ready(function() {
 
     $("#articleTopFive").click(function(e) {
         e.preventDefault();
-        drawArticleUsersBar(topUsers);
         console.log(topUsers);
         console.log(topUserData);
+        $("#articleChart").empty();
         $("#userSearch").parent().show();
         $("#userSearch").select2({
           data: topUsers,
           placeholder: "Select users to graph",
           multiple: "multiple"
         });
+        $("#graphTopUsers").show();
     });
+
+    $("#graphTopUsers").click(function(e){
+      e.preventDefault();
+      drawArticleUsersBar(selectedUsers);
+    });
+
 
     // $("#userSearch").on("select2:select", function(e){
     //   loadArticle(e);
@@ -257,7 +307,17 @@ $(document).ready(function() {
       $("#articleChartToggle").show();
       $("#userSearch").empty();
       $("#userSearch").parent().hide();
+      selectedUsers = []
     })
 
+    $("#userSearch").on("select2:select", function(e){
+      selectedUsers.push(e.params.data.text)
+    })
 
+    $("#userSearch").on("select2:unselect", function(e){
+      var index = selectedUsers.indexOf(e.params.data.text)
+      if(index > -1){
+        selectedUsers.splice(index, 1);
+      }
+    })
 });
