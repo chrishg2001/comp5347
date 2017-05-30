@@ -7,7 +7,6 @@ var cookieParser = require('cookie-parser');
 var fs = require('fs')
 
 var main = require('./app/routes/main.server.routes')
-var fr = require('./app/controllers/filereader.controller.js')
 
 var app = express()
 

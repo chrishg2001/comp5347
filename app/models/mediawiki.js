@@ -1,7 +1,7 @@
 var db = require('./dbinsert')
 var mongoose = require('mongoose')
 
-module.exports.updateRevisions=function(article, start, callback){
+module.exports.updateRevisions=function(article, start, time, callback){
   var https = require('https')
   var wikiEndpointHost = "en.wikipedia.org",
     path = "/w/api.php"
@@ -38,7 +38,7 @@ module.exports.updateRevisions=function(article, start, callback){
       revisions = pages[Object.keys(pages)[0]].revisions
       for(var revision in revisions){
         revisions[revision]["title"] = article
-        // console.log(revisions[revision])
+        console.log(revisions[revision])
       }
       // console.log("There are " + revisions.length + " revisions.");
       response["updatedRevisions"] = revisions.length
@@ -50,9 +50,17 @@ module.exports.updateRevisions=function(article, start, callback){
       // console.log("The revisions are made by " + uniqueUsers.size + " unique users");
       response["uniqueUsers"] = uniqueUsers.size
       console.log(response)
-      db.insertDocuments(revisions, function(err, result){
-        callback(response);
-      })
+      if(revisions[0] !== undefined){
+        if(revisions[0].timestamp !== time){
+          db.insertDocuments(revisions, function(err, result){
+            callback(response);
+          })
+        } else {
+          console.log("up to date");
+          response["updatedRevisions"] = 0;
+          callback(response);
+        }
+      }
     })
   }).on('error',function(e){
     console.log(e)

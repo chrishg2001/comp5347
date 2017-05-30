@@ -18,7 +18,7 @@ module.exports.pullRequest=function(req, res){
     }
     else {
       // var revisionData = mediaWiki.updateRevisions(article, data["latestRevision"])
-      mediaWiki.updateRevisions(article, data["latestRevision"], function(revisionData){
+      mediaWiki.updateRevisions(article, data["latestRevision"], result[0]["_doc"]["timestamp"], function(revisionData){
         for(var i in revisionData){
           data[i] = revisionData[i]
           console.log(data[i])
