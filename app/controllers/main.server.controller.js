@@ -35,7 +35,8 @@ module.exports.getIndArticleData=function(req,res){
   var data = {}
   dbquery.getArticleRevisions(article, function(err, result){
     data['revisions'] = result
-    dbquery.getArticleTopUsers(article, req.app.locals.admin, req.app.locals.bot, function(err, result){
+    dbquery.getArticleTopUsers(article, req.app.locals.admin.concat(req.app.locals.bot), function(err, result){
+      console.log(req.app.locals.admin);
       var topUsers = []
       for (var i in result){
         var user = result[i]["_id"]

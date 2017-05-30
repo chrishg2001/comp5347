@@ -16,6 +16,7 @@ RevisionSchema.statics.leastRevisions = function(title, callback){
 
 RevisionSchema.statics.mostRegisteredUsers = function(title, callback){
   return this.aggregate([{$group:{_id:"$title",uniqueCount:{$addToSet:"$user"}}}, {$project:{"CITY":1,uniqueUserCount:{$size:"$uniqueCount"}} }, {$sort:{uniqueUserCount:-1}}]).limit(1).exec(callback)
+  // return this.aggregate([{$match: {user: {$nin: admin}}}, {$group:{_id:"$title",uniqueCount:{$addToSet:"$user"}}}, {$project:{"CITY":1,uniqueUserCount:{$size:"$uniqueCount"}} }, {$sort:{uniqueUserCount:-1}}]).limit(1).exec(callback)
 }
 
 RevisionSchema.statics.leastRegisteredUsers = function(title, callback){
@@ -52,8 +53,9 @@ RevisionSchema.statics.getArticleRevisions = function(article, callback){
   return this.find({title:article}).count().exec(callback)
 }
 
-RevisionSchema.statics.getArticleTopUsers = function(article, admin, bot, callback){
-  return this.aggregate([{$match: {title: article, user: {$nin: admin}, user: {$nin:bot}, anon: {$exists:false}}}, {$group: {_id: "$user", revisions:{$sum:1}}}, {$sort:{revisions:-1}}]).limit(5).exec(callback)
+RevisionSchema.statics.getArticleTopUsers = function(article, array, callback){
+  return this.aggregate([{$match: {title: article, user: {$nin: array}, anon: {$exists:false}}}, {$group: {_id: "$user", revisions:{$sum:1}}}, {$sort:{revisions:-1}}]).limit(5).exec(callback)
+  // return this.find({"title": article, "user": {$nin: admin}, "user":{$nin: admin}, "anon": {$exists:false}}).aggregate([{$group: {_id: "$user", revisions:{$sum:1}}}, {$sort:{revisions:-1}}]).limit(5).exec(callback)
 }
 
 RevisionSchema.statics.groupArticleByYear = function(article, array, callback){
